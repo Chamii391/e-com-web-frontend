@@ -12,7 +12,7 @@ function App() {
   return (
     <BrowserRouter>
       <div>
-        <Toaster position="top-right" />
+        <Toaster position="top-center" />
        
         <Routes pathe ="/*">
           <Route path="/" element={<Home />} />
