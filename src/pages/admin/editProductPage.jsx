@@ -1,34 +1,33 @@
 import { useState } from "react";
 import toast from "react-hot-toast";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import mediaUpload from "../../utils/mediaUpload";
 import axios from "axios";
 
-export default function ProductInputs() {
+export default function EditProducts() {
     
-    const [product_id, setProduct_id] = useState("");
-    const [productname, setProductName] = useState("");
-    const [altName, setAltName] = useState("");
-    const [description, setDescription] = useState("");
-    const [images, setImages] = useState("");
-    const [labelledPrice, setLabelledPrice] = useState("");
-    const [price, setPrice] = useState("");
-    const [stock, setStock] = useState("");
+    const location = useLocation();
+    const [product_id, setProduct_id] = useState(location.state.product_id);
+    const [productname, setProductName] = useState(location.state.productname);
+    const [altName, setAltName] = useState(location.state.altName.join(","));
+    const [description, setDescription] = useState(location.state.description);
+    const [images, setImages] = useState([]);
+    const [labelledPrice, setLabelledPrice] = useState(location.state.labelledPrice);
+    const [price, setPrice] = useState(location.state.price);
+    const [stock, setStock] = useState(location.state.stock);
     const navigate = useNavigate();
 
-     async function  AddProducts() {
+    console.log(location)
+
+     async function  UpdateProducts() {
 
         const token = localStorage.getItem("token");
-        if (!token || token === "null" || token === "") {
+        if(token == null){
             toast.error("Please login to add product");
-            return;
-        }
-
-
-        if(images.length <0){
-            toast.error("Please upload an image")
             return
         }
+
+       let imageUrls = location.state.images
 
         const promiseArray =[]
 
@@ -38,8 +37,12 @@ export default function ProductInputs() {
 
        try{
 
-         const imageUrls = await Promise.all(promiseArray)
-         console.log(imageUrls)
+            if(images.length > 0){
+                 imageUrls = await Promise.all(promiseArray)
+            }
+
+
+         
 
          const altNamesArray = altName.split(",")
 
@@ -54,13 +57,13 @@ export default function ProductInputs() {
              stock: Number(stock),
          }
 
-         axios.post(import.meta.env.VITE_BACKEND_URL + '/api/product', product ,{
+         axios.put(import.meta.env.VITE_BACKEND_URL + '/api/product/'+product_id, product ,{
             headers: {
                 "Authorization": "Bearer " + token
             }
          }).then((res) => {
             console.log(res)
-            toast.success("Product added successfully");
+            toast.success("Product Upadete successfully");
             navigate("/adminpage/products")
 
 
@@ -80,10 +83,11 @@ export default function ProductInputs() {
 
     return (
         <div className="w-full h-screen flex flex-col justify-center items-center bg-gray-100 space-y-4 p-6">
-            <h2 className="text-2xl font-semibold text-gray-800">Product Details</h2>
+            <h2 className="text-2xl font-semibold text-gray-800">Edit Product</h2>
 
             <input
                 type="text"
+                disabled
                 placeholder="Product ID"
                 value={product_id}
                 onChange={(e) => setProduct_id(e.target.value)}
@@ -143,8 +147,8 @@ export default function ProductInputs() {
                 >
                     Cancel
                 </Link>
-                <button className="bg-green-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" onClick={AddProducts}>
-                    Add Product
+                <button className="bg-green-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" onClick={UpdateProducts}>
+                    Edit Product
                 </button>
             </div>
         </div>
